@@ -5,6 +5,9 @@ import OrderItemModel from "./order-item.model";
 import OrderModel from "./order.model";
 
 export default class OrderRepository implements OrderRepositoryInterface {
+  // findAll(): Promise<Order[]> {
+  //   throw new Error("Method not implemented.");
+  // }
 
   async find(id: string): Promise<Order> {
     let orderModel;
@@ -32,29 +35,26 @@ export default class OrderRepository implements OrderRepositoryInterface {
   }
 
   async findAll(): Promise<Order[]> {
-    const orderModels = await OrderModel.findAll();
-  
-    const orders = await Promise.all(orderModels.map(async (orderModel) => {
-      const orderItemsModel = await OrderItemModel.findAll({
-        where: {
-          order_id: orderModel.id,
-        }
-      });
-  
-      const orderItems = orderItemsModel.map((item) => new OrderItem(
+    const orderModels = await OrderModel.findAll({
+      include: [OrderItemModel],
+    });
+
+    const orders = orderModels.map((orderModel) => {
+
+      const orderItems = orderModel.items.map((item) => new OrderItem(
         item.id,
         item.name,
         item.price,
         item.product_id,
         item.quantity
       ));
-  
+
       return new Order(orderModel.id, orderModel.customer_id, orderItems);
-    }));
-  
+    });
+
     return orders;
   }
-  
+
 
   async create(entity: Order): Promise<void> {
     await OrderModel.create(

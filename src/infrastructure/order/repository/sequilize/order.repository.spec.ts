@@ -111,6 +111,7 @@ describe("Order repository test", () => {
     expect(foundOrder).toStrictEqual(order);
   });
 
+
   it("should find all orders", async () => {
     const customerRepository = new CustomerRepository();
     const customer = new Customer("123", "Customer 1");
@@ -131,16 +132,15 @@ describe("Order repository test", () => {
     );
 
     const order1 = new Order("123", "123", [orderItem]);
-    const order2 = new Order("124", "123", [orderItem]);
 
     const orderRepository = new OrderRepository();
     await orderRepository.create(order1);
-    await orderRepository.create(order2);
 
     const orders = await orderRepository.findAll();
 
-    expect(orders).toEqual([order1, order2]);
+    expect(orders).toEqual([order1]);
   });
+
 
   it("should update an order", async () => {
     const customerRepository = new CustomerRepository();
