@@ -1,6 +1,12 @@
+import SendConsoleLog1Handler from "../../customer/event/handler/send-console-log1.handler";
+import SendConsoleLog2Handler from "../../customer/event/handler/send-console-log2.handler";
 import SendEmailWhenProductIsCreatedHandler from "../../product/event/handler/send-email-when-product-is-created.handler";
 import ProductCreatedEvent from "../../product/event/product-created.event";
 import EventDispatcher from "./event-dispatcher";
+import CustumerCreatedEvent from './../../customer/event/custumer-created.event';
+import Address from "../../customer/value-object/address";
+import SendConsoleLogHandler from "../../customer/event/handler/send-console-log.handler";
+import ChangedAddressEvent from "../../customer/event/changed-address.event";
 
 describe("Domain events tests", () => {
   it("should register an event handler", () => {
@@ -76,6 +82,61 @@ describe("Domain events tests", () => {
 
     // Quando o notify for executado o SendEmailWhenProductIsCreatedHandler.handle() deve ser chamado
     eventDispatcher.notify(productCreatedEvent);
+
+    expect(spyEventHandler).toHaveBeenCalled();
+  });
+
+  it("should notify custumer created event handlers", () => {
+    const eventDispatcher = new EventDispatcher();
+    const sendConsoleLog1Handler = new SendConsoleLog1Handler();
+    const sendConsoleLog2Handler = new SendConsoleLog2Handler();
+    const spyEvent1Handler = jest.spyOn(sendConsoleLog1Handler, "handle");
+    const spyEvent2Handler = jest.spyOn(sendConsoleLog2Handler, "handle");
+
+    eventDispatcher.register("CustumerCreatedEvent", sendConsoleLog1Handler);
+    eventDispatcher.register("CustumerCreatedEvent", sendConsoleLog2Handler);
+
+    expect(
+      eventDispatcher.getEventHandlers["CustumerCreatedEvent"][0]
+    ).toMatchObject(sendConsoleLog1Handler);
+
+    expect(
+      eventDispatcher.getEventHandlers["CustumerCreatedEvent"][1]
+    ).toMatchObject(sendConsoleLog2Handler);
+
+    const custumerCreatedEvent = new CustumerCreatedEvent({});
+
+    // Quando o notify for executado o SendEmailWhenProductIsCreatedHandler.handle() deve ser chamado
+    eventDispatcher.notify(custumerCreatedEvent);
+
+    expect(spyEvent1Handler).toHaveBeenCalled();
+    expect(spyEvent2Handler).toHaveBeenCalled();
+  });
+
+  it("should notify changed address event handlers", () => {
+    const eventDispatcher = new EventDispatcher();
+    const sendConsoleLogHandler = new SendConsoleLogHandler();
+    const spyEventHandler = jest.spyOn(sendConsoleLogHandler, "handle");
+
+    eventDispatcher.register("ChangedAddressEvent", sendConsoleLogHandler);
+
+    expect(
+      eventDispatcher.getEventHandlers["ChangedAddressEvent"][0]
+    ).toMatchObject(sendConsoleLogHandler);
+
+    const changedAddressEvent = new ChangedAddressEvent({
+      id: "123",
+      name: "Fulano da Silva",
+      Address:{
+        street: "Alguma rua 1",
+        number: 1,
+        zip: "74999-888",
+        city: "Alguma cidade"
+      }
+    });
+
+    // Quando o notify for executado o SendEmailWhenProductIsCreatedHandler.handle() deve ser chamado
+    eventDispatcher.notify(changedAddressEvent);
 
     expect(spyEventHandler).toHaveBeenCalled();
   });
