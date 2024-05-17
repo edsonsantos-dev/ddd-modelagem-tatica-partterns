@@ -7,6 +7,7 @@ import CustumerCreatedEvent from './../../customer/event/custumer-created.event'
 import Address from "../../customer/value-object/address";
 import SendConsoleLogHandler from "../../customer/event/handler/send-console-log.handler";
 import ChangedAddressEvent from "../../customer/event/changed-address.event";
+import Customer from "../../customer/entity/customer";
 
 describe("Domain events tests", () => {
   it("should register an event handler", () => {
@@ -118,6 +119,13 @@ describe("Domain events tests", () => {
     const sendConsoleLogHandler = new SendConsoleLogHandler();
     const spyEventHandler = jest.spyOn(sendConsoleLogHandler, "handle");
 
+    const customer = new Customer("123", "Fulano da Silva");
+    const address = new Address("Alguma rua 1", 1, "74999-888","Alguma cidade");
+    customer.Address = address;
+    customer.activate();
+    const newAddress = new Address("Alguma rua 2", 2, "74000-999","Alguma cidade Nova");
+    customer.changeAddress(newAddress);
+
     eventDispatcher.register("ChangedAddressEvent", sendConsoleLogHandler);
 
     expect(
@@ -125,14 +133,9 @@ describe("Domain events tests", () => {
     ).toMatchObject(sendConsoleLogHandler);
 
     const changedAddressEvent = new ChangedAddressEvent({
-      id: "123",
-      name: "Fulano da Silva",
-      Address:{
-        street: "Alguma rua 1",
-        number: 1,
-        zip: "74999-888",
-        city: "Alguma cidade"
-      }
+      id: customer.id,
+      name: customer.name,
+      address: customer.Address.toString()
     });
 
     // Quando o notify for executado o SendEmailWhenProductIsCreatedHandler.handle() deve ser chamado
